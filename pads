@@ -217,4 +217,140 @@ omp_destroy_lock()	delete lock
 
 
 
+//fibtask
+int done[100];
+int value[100];
+
+int fib(int n) {
+
+    if(n < 2)
+        return n;
+
+    if(!done[n]) {
+
+        int i, j;
+
+#pragma omp task shared(i)
+        i = fib(n-1);
+
+#pragma omp task shared(j)
+        j = fib(n-2);
+
+#pragma omp taskwait
+
+        value[n] = i + j;
+        done[n] = 1;
+    }
+
+    return value[n];
+}
+
+
+
+
+
+//deadlock
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+
+    omp_lock_t lockA, lockB;
+    int a = 0, b = 0;
+
+    omp_init_lock(&lockA);
+    omp_init_lock(&lockB);
+
+#pragma omp parallel sections
+{
+#pragma omp section
+{
+    omp_set_lock(&lockA);
+    printf("Thread 1 locked A\n");
+
+    omp_set_lock(&lockB);   // waits if thread 2 has B
+    printf("Thread 1 locked B\n");
+
+    a++;
+    b++;
+
+    omp_unset_lock(&lockB);
+    omp_unset_lock(&lockA);
+}
+
+#pragma omp section
+{
+    omp_set_lock(&lockB);
+    printf("Thread 2 locked B\n");
+
+    omp_set_lock(&lockA);   // waits if thread 1 has A
+    printf("Thread 2 locked A\n");
+
+    a++;
+    b++;
+
+    omp_unset_lock(&lockA);
+    omp_unset_lock(&lockB);
+}
+}
+
+    omp_destroy_lock(&lockA);
+    omp_destroy_lock(&lockB);
+
+    return 0;
+}
+
+
+
+//deadlocksolve
+#include <stdio.h>
+#include <omp.h>
+
+int main() {
+
+    omp_lock_t lockA, lockB;
+    int a = 0, b = 0;
+
+    omp_init_lock(&lockA);
+    omp_init_lock(&lockB);
+
+#pragma omp parallel sections
+{
+#pragma omp section
+{
+    omp_set_lock(&lockA);
+    omp_set_lock(&lockB);
+
+    printf("Thread 1 inside critical section\n");
+
+    a++;
+    b++;
+
+    omp_unset_lock(&lockB);
+    omp_unset_lock(&lockA);
+}
+
+#pragma omp section
+{
+    omp_set_lock(&lockA);
+    omp_set_lock(&lockB);
+
+    printf("Thread 2 inside critical section\n");
+
+    a++;
+    b++;
+
+    omp_unset_lock(&lockB);
+    omp_unset_lock(&lockA);
+}
+}
+
+    omp_destroy_lock(&lockA);
+    omp_destroy_lock(&lockB);
+
+    return 0;
+}
+
+
+
 #pragma omp barrier
