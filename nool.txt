@@ -1,0 +1,1164 @@
+/*
+gcc file.c -pthread
+
+=================================
+PTHREADS FUNCTION SYNTAX SHEET
+=================================
+
+HEADER FILES
+--------------
+
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+
+=================================
+1. pthread_t
+=================================
+
+Represents a thread.
+
+Syntax:
+pthread_t thread_id;
+
+
+=================================
+2. pthread_create
+=================================
+
+Creates a new thread.
+
+Syntax:
+pthread_create(&thread_id,
+               NULL,
+               function_name,
+               argument);
+
+Example:
+pthread_create(&tid,
+               NULL,
+               worker,
+               NULL);
+
+
+=================================
+3. Thread Function
+=================================
+
+Thread execution function.
+
+Syntax:
+void* function_name(void *arg)
+{
+    // thread code
+
+    pthread_exit(NULL);
+}
+
+Example:
+void* worker(void *arg)
+{
+    printf("Thread running\n");
+
+    pthread_exit(NULL);
+}
+
+
+=================================
+4. pthread_join
+=================================
+
+Waits for thread completion.
+
+Syntax:
+pthread_join(thread_id,
+             NULL);
+
+Example:
+pthread_join(tid, NULL);
+
+
+=================================
+5. pthread_exit
+=================================
+
+Terminates thread.
+
+Syntax:
+pthread_exit(NULL);
+
+
+=================================
+6. pthread_self
+=================================
+
+Gets current thread ID.
+
+Syntax:
+pthread_self()
+
+Example:
+printf("%lu\n", pthread_self());
+
+
+=================================
+7. pthread_equal
+=================================
+
+Compares thread IDs.
+
+Syntax:
+pthread_equal(thread1,
+              thread2);
+
+
+=================================
+8. pthread_mutex_t
+=================================
+
+Mutex declaration.
+
+Syntax:
+pthread_mutex_t mutex;
+
+
+=================================
+9. pthread_mutex_init
+=================================
+
+Initializes mutex.
+
+Syntax:
+pthread_mutex_init(&mutex,
+                   NULL);
+
+
+=================================
+10. pthread_mutex_lock
+=================================
+
+Locks mutex.
+
+Syntax:
+pthread_mutex_lock(&mutex);
+
+
+=================================
+11. pthread_mutex_unlock
+=================================
+
+Unlocks mutex.
+
+Syntax:
+pthread_mutex_unlock(&mutex);
+
+
+=================================
+12. pthread_mutex_destroy
+=================================
+
+Destroys mutex.
+
+Syntax:
+pthread_mutex_destroy(&mutex);
+
+
+=================================
+13. pthread_cond_t
+=================================
+
+Condition variable declaration.
+
+Syntax:
+pthread_cond_t cond;
+
+
+=================================
+14. pthread_cond_init
+=================================
+
+Initialize condition variable.
+
+Syntax:
+pthread_cond_init(&cond,
+                  NULL);
+
+
+=================================
+15. pthread_cond_wait
+=================================
+
+Wait on condition variable.
+
+Syntax:
+pthread_cond_wait(&cond,
+                  &mutex);
+
+
+=================================
+16. pthread_cond_signal
+=================================
+
+Wake one waiting thread.
+
+Syntax:
+pthread_cond_signal(&cond);
+
+
+=================================
+17. pthread_cond_broadcast
+=================================
+
+Wake all waiting threads.
+
+Syntax:
+pthread_cond_broadcast(&cond);
+
+
+=================================
+18. pthread_cond_destroy
+=================================
+
+Destroy condition variable.
+
+Syntax:
+pthread_cond_destroy(&cond);
+
+
+=================================
+19. sleep
+=================================
+
+Pause thread execution.
+
+Syntax:
+sleep(seconds);
+
+Example:
+sleep(1);
+
+
+=================================
+20. usleep
+=================================
+
+Microsecond sleep.
+
+Syntax:
+usleep(microseconds);
+
+Example:
+usleep(1000);
+
+
+=================================
+COMMON COMPILATION
+=================================
+
+Compile:
+gcc file.c -lpthread
+
+or
+
+gcc file.c -pthread
+
+
+Run:
+./a.out
+
+
+=================================
+COMMON THREAD PATTERNS
+=================================
+
+1. Create Multiple Threads
+---------------------------
+
+for(int i=0; i<n; i++)
+{
+    pthread_create(&tid[i],
+                   NULL,
+                   worker,
+                   &arg[i]);
+}
+
+
+2. Join Multiple Threads
+-------------------------
+
+for(int i=0; i<n; i++)
+{
+    pthread_join(tid[i], NULL);
+}
+
+
+3. Critical Section
+--------------------
+
+pthread_mutex_lock(&mutex);
+
+/* critical section */
+
+pthread_mutex_unlock(&mutex);
+
+
+4. Pass Argument to Thread
+---------------------------
+
+void* worker(void *arg)
+{
+    int id = *(int*)arg;
+
+    printf("%d\n", id);
+
+    pthread_exit(NULL);
+}
+
+
+=================================
+COMMON LAB PROGRAMS
+=================================
+
+1. Thread Creation
+2. Sum of Array
+3. Matrix Multiplication
+4. Producer Consumer
+5. Reader Writer
+6. Dining Philosophers
+7. Mutex Synchronization
+8. Parallel Search
+9. Parallel Merge Sort
+10. Parallel Quick Sort
+
+
+=================================
+MOST IMPORTANT EXAM FUNCTIONS
+=================================
+
+pthread_create()
+pthread_join()
+pthread_mutex_lock()
+pthread_mutex_unlock()
+pthread_exit()
+
+
+=================================
+COMMON ERRORS
+=================================
+
+1. Race Condition
+------------------
+
+Multiple threads access shared data
+without synchronization.
+
+
+2. Deadlock
+------------
+
+Two threads waiting forever for locks.
+
+
+3. Starvation
+--------------
+
+Thread never gets CPU/resource.
+
+
+4. Segmentation Fault
+----------------------
+
+Passing wrong thread arguments.
+
+
+=================================
+THREAD CREATION TEMPLATE
+=================================
+
+#include <stdio.h>
+#include <pthread.h>
+
+void* worker(void *arg)
+{
+    int id = *(int*)arg;
+
+    printf("Thread %d running\n", id);
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t tid[4];
+
+    int id[4];
+
+    for(int i=0; i<4; i++)
+    {
+        id[i] = i;
+
+        pthread_create(&tid[i],
+                       NULL,
+                       worker,
+                       &id[i]);
+    }
+
+    for(int i=0; i<4; i++)
+    {
+        pthread_join(tid[i], NULL);
+    }
+
+    return 0;
+}
+
+
+=================================
+MUTEX TEMPLATE
+=================================
+
+pthread_mutex_t mutex;
+
+pthread_mutex_init(&mutex, NULL);
+
+pthread_mutex_lock(&mutex);
+
+/* critical section */
+
+pthread_mutex_unlock(&mutex);
+
+pthread_mutex_destroy(&mutex);
+
+
+=================================
+CONDITION VARIABLE TEMPLATE
+=================================
+
+pthread_cond_t cond;
+
+pthread_cond_init(&cond, NULL);
+
+pthread_cond_wait(&cond, &mutex);
+
+pthread_cond_signal(&cond);
+
+pthread_cond_destroy(&cond);
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+
+void* worker(void *arg)
+{
+    int id = *(int*)arg;
+
+    printf("Thread %d is running\n", id);
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t threads[4];
+
+    int ids[4];
+
+    for(int i=0; i<4; i++)
+    {
+        ids[i] = i;
+
+        pthread_create(&threads[i],
+                       NULL,
+                       worker,
+                       &ids[i]);
+    }
+
+    for(int i=0; i<4; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
+
+    printf("All threads completed\n");
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+
+int arr[8] = {1,2,3,4,5,6,7,8};
+
+int sum = 0;
+
+pthread_mutex_t mutex;
+
+void* partial_sum(void *arg)
+{
+    int start = *(int*)arg;
+
+    int local = 0;
+
+    for(int i=start; i<start+4; i++)
+    {
+        local += arr[i];
+    }
+
+    pthread_mutex_lock(&mutex);
+
+    sum += local;
+
+    pthread_mutex_unlock(&mutex);
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t t1, t2;
+
+    int s1 = 0;
+    int s2 = 4;
+
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&t1, NULL,
+                   partial_sum, &s1);
+
+    pthread_create(&t2, NULL,
+                   partial_sum, &s2);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    printf("Total Sum = %d\n", sum);
+
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+
+#define N 2
+
+int A[N][N] = {{1,2},{3,4}};
+int B[N][N] = {{5,6},{7,8}};
+int C[N][N];
+
+void* multiply(void *arg)
+{
+    int row = *(int*)arg;
+
+    for(int j=0; j<N; j++)
+    {
+        C[row][j] = 0;
+
+        for(int k=0; k<N; k++)
+        {
+            C[row][j] += A[row][k] * B[k][j];
+        }
+    }
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t threads[N];
+
+    int rows[N];
+
+    for(int i=0; i<N; i++)
+    {
+        rows[i] = i;
+
+        pthread_create(&threads[i],
+                       NULL,
+                       multiply,
+                       &rows[i]);
+    }
+
+    for(int i=0; i<N; i++)
+    {
+        pthread_join(threads[i], NULL);
+    }
+
+    printf("Result Matrix:\n");
+
+    for(int i=0; i<N; i++)
+    {
+        for(int j=0; j<N; j++)
+        {
+            printf("%d ", C[i][j]);
+        }
+
+        printf("\n");
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+int buffer = 0;
+
+pthread_mutex_t mutex;
+
+void* producer(void *arg)
+{
+    for(int i=1; i<=5; i++)
+    {
+        pthread_mutex_lock(&mutex);
+
+        buffer = i;
+
+        printf("Produced %d\n", buffer);
+
+        pthread_mutex_unlock(&mutex);
+
+        sleep(1);
+    }
+
+    pthread_exit(NULL);
+}
+
+void* consumer(void *arg)
+{
+    for(int i=1; i<=5; i++)
+    {
+        pthread_mutex_lock(&mutex);
+
+        printf("Consumed %d\n", buffer);
+
+        pthread_mutex_unlock(&mutex);
+
+        sleep(1);
+    }
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t p, c;
+
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&p, NULL,
+                   producer, NULL);
+
+    pthread_create(&c, NULL,
+                   consumer, NULL);
+
+    pthread_join(p, NULL);
+    pthread_join(c, NULL);
+
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+
+int counter = 0;
+
+pthread_mutex_t mutex;
+
+void* increment(void *arg)
+{
+    for(int i=0; i<100000; i++)
+    {
+        pthread_mutex_lock(&mutex);
+
+        counter++;
+
+        pthread_mutex_unlock(&mutex);
+    }
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t t1, t2;
+
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&t1, NULL,
+                   increment, NULL);
+
+    pthread_create(&t2, NULL,
+                   increment, NULL);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    printf("Counter = %d\n", counter);
+
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+
+int arr[10] = {1,5,7,9,11,13,15,17,19,21};
+
+int key = 15;
+
+void* search(void *arg)
+{
+    int start = *(int*)arg;
+
+    for(int i=start; i<start+5; i++)
+    {
+        if(arr[i] == key)
+        {
+            printf("Found at index %d\n", i);
+        }
+    }
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t t1, t2;
+
+    int s1 = 0;
+    int s2 = 5;
+
+    pthread_create(&t1, NULL,
+                   search, &s1);
+
+    pthread_create(&t2, NULL,
+                   search, &s2);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+int data = 0;
+
+pthread_mutex_t mutex;
+
+void* writer(void *arg)
+{
+    pthread_mutex_lock(&mutex);
+
+    data += 10;
+
+    printf("Writer updated data = %d\n", data);
+
+    pthread_mutex_unlock(&mutex);
+
+    pthread_exit(NULL);
+}
+
+void* reader(void *arg)
+{
+    pthread_mutex_lock(&mutex);
+
+    printf("Reader read data = %d\n", data);
+
+    pthread_mutex_unlock(&mutex);
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t r1, r2, w1;
+
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&w1, NULL,
+                   writer, NULL);
+
+    pthread_create(&r1, NULL,
+                   reader, NULL);
+
+    pthread_create(&r2, NULL,
+                   reader, NULL);
+
+    pthread_join(w1, NULL);
+    pthread_join(r1, NULL);
+    pthread_join(r2, NULL);
+
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+int data = 0;
+
+pthread_mutex_t mutex;
+
+void* writer(void *arg)
+{
+    pthread_mutex_lock(&mutex);
+
+    data += 10;
+
+    printf("Writer updated data = %d\n", data);
+
+    pthread_mutex_unlock(&mutex);
+
+    pthread_exit(NULL);
+}
+
+void* reader(void *arg)
+{
+    pthread_mutex_lock(&mutex);
+
+    printf("Reader read data = %d\n", data);
+
+    pthread_mutex_unlock(&mutex);
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t r1, r2, w1;
+
+    pthread_mutex_init(&mutex, NULL);
+
+    pthread_create(&w1, NULL,
+                   writer, NULL);
+
+    pthread_create(&r1, NULL,
+                   reader, NULL);
+
+    pthread_create(&r2, NULL,
+                   reader, NULL);
+
+    pthread_join(w1, NULL);
+    pthread_join(r1, NULL);
+    pthread_join(r2, NULL);
+
+    pthread_mutex_destroy(&mutex);
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <pthread.h>
+#include <unistd.h>
+
+pthread_mutex_t forks[5];
+
+void* philosopher(void *arg)
+{
+    int id = *(int*)arg;
+
+    pthread_mutex_lock(&forks[id]);
+    pthread_mutex_lock(&forks[(id+1)%5]);
+
+    printf("Philosopher %d eating\n", id);
+
+    sleep(1);
+
+    pthread_mutex_unlock(&forks[id]);
+    pthread_mutex_unlock(&forks[(id+1)%5]);
+
+    pthread_exit(NULL);
+}
+
+int main()
+{
+    pthread_t phil[5];
+
+    int ids[5];
+
+    for(int i=0; i<5; i++)
+    {
+        pthread_mutex_init(&forks[i], NULL);
+    }
+
+    for(int i=0; i<5; i++)
+    {
+        ids[i] = i;
+
+        pthread_create(&phil[i],
+                       NULL,
+                       philosopher,
+                       &ids[i]);
+    }
+
+    for(int i=0; i<5; i++)
+    {
+        pthread_join(phil[i], NULL);
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+
+#define BUFFER_SIZE 5
+#define NUM_PRODUCERS 3
+#define NUM_CONSUMERS 3
+#define ITEMS_PER_PRODUCER 5
+
+int buffer[BUFFER_SIZE];
+
+int in = 0;
+int out = 0;
+int count = 0;
+
+pthread_mutex_t mutex;
+
+pthread_cond_t empty;
+pthread_cond_t full;
+
+
+// PRODUCER
+void* producer(void *arg)
+{
+    int id = *(int*)arg;
+
+    for(int i = 1; i <= ITEMS_PER_PRODUCER; i++)
+    {
+        int item = id * 100 + i;
+
+        pthread_mutex_lock(&mutex);
+
+        // Wait if buffer full
+        while(count == BUFFER_SIZE)
+        {
+            pthread_cond_wait(&empty, &mutex);
+        }
+
+        // Produce item
+        buffer[in] = item;
+
+        printf("Producer %d produced %d at %d\n",
+               id, item, in);
+
+        in = (in + 1) % BUFFER_SIZE;
+
+        count++;
+
+        // Signal consumers
+        pthread_cond_signal(&full);
+
+        pthread_mutex_unlock(&mutex);
+
+        sleep(1);
+    }
+
+    pthread_exit(NULL);
+}
+
+
+// CONSUMER
+void* consumer(void *arg)
+{
+    int id = *(int*)arg;
+
+    for(int i = 1; i <= ITEMS_PER_PRODUCER; i++)
+    {
+        pthread_mutex_lock(&mutex);
+
+        // Wait if buffer empty
+        while(count == 0)
+        {
+            pthread_cond_wait(&full, &mutex);
+        }
+
+        // Consume item
+        int item = buffer[out];
+
+        printf("Consumer %d consumed %d from %d\n",
+               id, item, out);
+
+        out = (out + 1) % BUFFER_SIZE;
+
+        count--;
+
+        // Signal producers
+        pthread_cond_signal(&empty);
+
+        pthread_mutex_unlock(&mutex);
+
+        sleep(1);
+    }
+
+    pthread_exit(NULL);
+}
+
+
+int main()
+{
+    pthread_t prod[NUM_PRODUCERS];
+    pthread_t cons[NUM_CONSUMERS];
+
+    int prod_id[NUM_PRODUCERS];
+    int cons_id[NUM_CONSUMERS];
+
+    // Initialize mutex
+    pthread_mutex_init(&mutex, NULL);
+
+    // Initialize condition variables
+    pthread_cond_init(&empty, NULL);
+    pthread_cond_init(&full, NULL);
+
+    // Create producer threads
+    for(int i = 0; i < NUM_PRODUCERS; i++)
+    {
+        prod_id[i] = i + 1;
+
+        pthread_create(&prod[i],
+                       NULL,
+                       producer,
+                       &prod_id[i]);
+    }
+
+    // Create consumer threads
+    for(int i = 0; i < NUM_CONSUMERS; i++)
+    {
+        cons_id[i] = i + 1;
+
+        pthread_create(&cons[i],
+                       NULL,
+                       consumer,
+                       &cons_id[i]);
+    }
+
+    // Join producers
+    for(int i = 0; i < NUM_PRODUCERS; i++)
+    {
+        pthread_join(prod[i], NULL);
+    }
+
+    // Join consumers
+    for(int i = 0; i < NUM_CONSUMERS; i++)
+    {
+        pthread_join(cons[i], NULL);
+    }
+
+    // Destroy mutex and condition variables
+    pthread_mutex_destroy(&mutex);
+
+    pthread_cond_destroy(&empty);
+    pthread_cond_destroy(&full);
+
+    return 0;
+}
