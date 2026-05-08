@@ -1,0 +1,935 @@
+1. MPI_Init
+------------
+Initializes MPI environment
+
+Syntax:
+MPI_Init(&argc, &argv);
+
+
+2. MPI_Finalize
+----------------
+Terminates MPI environment
+
+Syntax:
+MPI_Finalize();
+
+
+3. MPI_Comm_rank
+-----------------
+Gets rank (process ID)
+
+Syntax:
+MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
+4. MPI_Comm_size
+-----------------
+Gets total number of processes
+
+Syntax:
+MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+
+5. MPI_Send
+------------
+Blocking send
+
+Syntax:
+MPI_Send(buffer,
+         count,
+         datatype,
+         destination_rank,
+         tag,
+         communicator);
+
+Example:
+MPI_Send(&x, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
+
+
+6. MPI_Recv
+------------
+Blocking receive
+
+Syntax:
+MPI_Recv(buffer,
+         count,
+         datatype,
+         source_rank,
+         tag,
+         communicator,
+         &status);
+
+Example:
+MPI_Recv(&x, 1, MPI_INT, 0, 0,
+         MPI_COMM_WORLD, &status);
+
+
+7. MPI_Isend
+-------------
+Non-blocking send
+
+Syntax:
+MPI_Isend(buffer,
+          count,
+          datatype,
+          destination,
+          tag,
+          communicator,
+          &request);
+
+
+8. MPI_Irecv
+-------------
+Non-blocking receive
+
+Syntax:
+MPI_Irecv(buffer,
+          count,
+          datatype,
+          source,
+          tag,
+          communicator,
+          &request);
+
+
+9. MPI_Wait
+------------
+Wait for non-blocking operation
+
+Syntax:
+MPI_Wait(&request, &status);
+
+
+10. MPI_Bcast
+--------------
+Broadcast data from root to all
+
+Syntax:
+MPI_Bcast(buffer,
+          count,
+          datatype,
+          root,
+          communicator);
+
+Example:
+MPI_Bcast(&n, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+
+11. MPI_Scatter
+----------------
+Distribute chunks of data
+
+Syntax:
+MPI_Scatter(sendbuf,
+            sendcount,
+            sendtype,
+            recvbuf,
+            recvcount,
+            recvtype,
+            root,
+            communicator);
+
+
+12. MPI_Gather
+---------------
+Collect data to root
+
+Syntax:
+MPI_Gather(sendbuf,
+           sendcount,
+           sendtype,
+           recvbuf,
+           recvcount,
+           recvtype,
+           root,
+           communicator);
+
+
+13. MPI_Reduce
+---------------
+Reduce values to root
+
+Syntax:
+MPI_Reduce(sendbuf,
+           recvbuf,
+           count,
+           datatype,
+           operation,
+           root,
+           communicator);
+
+Operations:
+MPI_SUM
+MPI_MAX
+MPI_MIN
+MPI_PROD
+
+
+14. MPI_Allreduce
+------------------
+Reduce and distribute result to all
+
+Syntax:
+MPI_Allreduce(sendbuf,
+              recvbuf,
+              count,
+              datatype,
+              operation,
+              communicator);
+
+
+15. MPI_Barrier
+----------------
+Synchronize all processes
+
+Syntax:
+MPI_Barrier(MPI_COMM_WORLD);
+
+
+16. MPI_Sendrecv
+-----------------
+Send and receive simultaneously
+
+Syntax:
+MPI_Sendrecv(sendbuf,
+             sendcount,
+             sendtype,
+             dest,
+             sendtag,
+             recvbuf,
+             recvcount,
+             recvtype,
+             source,
+             recvtag,
+             communicator,
+             &status);
+
+
+17. MPI_Wtime
+--------------
+Returns elapsed wall-clock time
+
+Syntax:
+double t;
+t = MPI_Wtime();
+
+
+18. MPI_Status
+---------------
+Stores receive information
+
+Syntax:
+MPI_Status status;
+
+
+19. MPI_Request
+----------------
+Used for non-blocking communication
+
+Syntax:
+MPI_Request request;
+
+
+===========================
+COMMON MPI DATATYPES
+===========================
+
+MPI_INT
+MPI_FLOAT
+MPI_DOUBLE
+MPI_CHAR
+MPI_LONG
+
+
+===========================
+COMMON COMMUNICATOR
+===========================
+
+MPI_COMM_WORLD
+
+
+===========================
+COMPILE & RUN
+===========================
+
+Compile:
+mpicc file.c
+
+Run:
+mpirun -np 4 ./a.out
+
+or
+
+mpiexec -n 4 ./a.out
+
+
+
+
+
+
+
+
+
+
+
+
+Point to Point
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+
+    int rank, size;
+    int data;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    if(rank == 0) {
+
+        data = 100;
+
+        MPI_Send(&data, 1, MPI_INT, 1, 0, MPI_COMM_WORLD);
+
+        printf("P0 sent %d\n", data);
+    }
+
+    else if(rank == 1) {
+
+        MPI_Recv(&data, 1, MPI_INT, 0, 0,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        printf("P1 received %d\n", data);
+    }
+
+    MPI_Finalize();
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+bcast 
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+
+    int rank;
+    int value;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if(rank == 0)
+        value = 500;
+
+    MPI_Bcast(&value, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    printf("Process %d received %d\n", rank, value);
+
+    MPI_Finalize();
+}
+
+
+
+
+
+
+
+
+
+
+scatter
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+
+    int rank, size;
+    int sendbuf[8] = {1,2,3,4,5,6,7,8};
+    int recvbuf[2];
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    MPI_Scatter(sendbuf, 2, MPI_INT,
+                recvbuf, 2, MPI_INT,
+                0, MPI_COMM_WORLD);
+
+    printf("P%d received %d %d\n",
+           rank, recvbuf[0], recvbuf[1]);
+
+    MPI_Finalize();
+}
+
+
+
+
+
+
+
+
+
+gather
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+
+    int rank, size;
+    int send;
+    int recv[4];
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    send = rank * 10;
+
+    MPI_Gather(&send, 1, MPI_INT,
+               recv, 1, MPI_INT,
+               0, MPI_COMM_WORLD);
+
+    if(rank == 0) {
+
+        for(int i=0; i<size; i++)
+            printf("%d ", recv[i]);
+    }
+
+    MPI_Finalize();
+}
+
+
+
+
+
+
+
+
+
+
+reduce
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+
+    int rank;
+    int value, sum;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    value = rank + 1;
+
+    MPI_Reduce(&value, &sum,
+               1, MPI_INT,
+               MPI_SUM,
+               0,
+               MPI_COMM_WORLD);
+
+    if(rank == 0)
+        printf("Sum = %d\n", sum);
+
+    MPI_Finalize();
+}
+
+
+
+
+
+
+
+
+
+allreduce
+MPI_Allreduce(&value, &sum,
+              1, MPI_INT,
+              MPI_SUM,
+              MPI_COMM_WORLD);
+
+
+
+
+
+
+
+
+
+
+barrier
+printf("Before barrier %d\n", rank);
+MPI_Barrier(MPI_COMM_WORLD);
+printf("After barrier %d\n", rank);
+
+
+
+
+
+
+
+
+
+Isend Irecv
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+
+    int rank;
+    int data = 123;
+    MPI_Request request;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    if(rank == 0) {
+
+        MPI_Isend(&data, 1, MPI_INT,
+                  1, 0,
+                  MPI_COMM_WORLD,
+                  &request);
+
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
+    }
+
+    else if(rank == 1) {
+
+        MPI_Irecv(&data, 1, MPI_INT,
+                  0, 0,
+                  MPI_COMM_WORLD,
+                  &request);
+
+        MPI_Wait(&request, MPI_STATUS_IGNORE);
+
+        printf("Received %d\n", data);
+    }
+
+    MPI_Finalize();
+}
+
+
+
+
+
+
+
+
+
+sendrecv
+MPI_Sendrecv(sendbuf, 1, MPI_INT, dest, 0,
+             recvbuf, 1, MPI_INT, source, 0,
+             MPI_COMM_WORLD, &status);
+
+
+
+
+
+
+
+
+
+ring
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[]) {
+
+    int rank, size;
+    int token;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    int next = (rank + 1) % size;
+    int prev = (rank - 1 + size) % size;
+
+    token = rank;
+
+    MPI_Sendrecv(&token, 1, MPI_INT, next, 0,
+                 &token, 1, MPI_INT, prev, 0,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    printf("P%d received %d\n", rank, token);
+
+    MPI_Finalize();
+}
+
+
+
+
+
+
+
+
+
+
+matrix multiplication
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+
+#define N 4
+
+int main(int argc, char *argv[])
+{
+    int rank, size;
+
+    int A[N][N], B[N][N], C[N][N];
+
+    int localA[N];
+    int localC[N];
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // Number of processes must equal N
+    if(size != N)
+    {
+        if(rank == 0)
+            printf("Run with %d processes\n", N);
+
+        MPI_Finalize();
+        return 0;
+    }
+
+    // Initialize matrices at root
+    if(rank == 0)
+    {
+        printf("Matrix A:\n");
+
+        for(int i=0; i<N; i++)
+        {
+            for(int j=0; j<N; j++)
+            {
+                A[i][j] = i + j;
+
+                printf("%d ", A[i][j]);
+            }
+
+            printf("\n");
+        }
+
+        printf("\nMatrix B:\n");
+
+        for(int i=0; i<N; i++)
+        {
+            for(int j=0; j<N; j++)
+            {
+                B[i][j] = i * j;
+
+                printf("%d ", B[i][j]);
+            }
+
+            printf("\n");
+        }
+    }
+
+    // Scatter rows of A
+    MPI_Scatter(A, N, MPI_INT,
+                localA, N, MPI_INT,
+                0, MPI_COMM_WORLD);
+
+    // Broadcast full matrix B
+    MPI_Bcast(B, N*N, MPI_INT,
+              0, MPI_COMM_WORLD);
+
+    // Local multiplication
+    for(int j=0; j<N; j++)
+    {
+        localC[j] = 0;
+
+        for(int k=0; k<N; k++)
+        {
+            localC[j] += localA[k] * B[k][j];
+        }
+    }
+
+    // Gather results
+    MPI_Gather(localC, N, MPI_INT,
+               C, N, MPI_INT,
+               0, MPI_COMM_WORLD);
+
+    // Print result
+    if(rank == 0)
+    {
+        printf("\nResult Matrix C:\n");
+
+        for(int i=0; i<N; i++)
+        {
+            for(int j=0; j<N; j++)
+            {
+                printf("%d ", C[i][j]);
+            }
+
+            printf("\n");
+        }
+    }
+
+    MPI_Finalize();
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+ring latency
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+
+#define NUMBER_OF_TESTS 100
+
+int main(int argc, char *argv[])
+{
+    int rank, size;
+    int tag = 0;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    int message_sizes[] = {1, 10, 100, 1000, 10000};
+    int num_sizes = 5;
+
+    for(int s = 0; s < num_sizes; s++)
+    {
+        int msg_size = message_sizes[s];
+
+        double *buffer = (double *)malloc(msg_size * sizeof(double));
+
+        double total_time = 0.0;
+
+        for(int test = 0; test < NUMBER_OF_TESTS; test++)
+        {
+            MPI_Barrier(MPI_COMM_WORLD);
+
+            double start, end;
+
+            int next = (rank + 1) % size;
+            int prev = (rank - 1 + size) % size;
+
+            if(rank == 0)
+            {
+                start = MPI_Wtime();
+
+                // Send to next process
+                MPI_Send(buffer, msg_size, MPI_DOUBLE,
+                         next, tag, MPI_COMM_WORLD);
+
+                // Receive from previous process
+                MPI_Recv(buffer, msg_size, MPI_DOUBLE,
+                         prev, tag, MPI_COMM_WORLD,
+                         MPI_STATUS_IGNORE);
+
+                end = MPI_Wtime();
+
+                total_time += (end - start);
+            }
+            else
+            {
+                // Receive from previous process
+                MPI_Recv(buffer, msg_size, MPI_DOUBLE,
+                         prev, tag, MPI_COMM_WORLD,
+                         MPI_STATUS_IGNORE);
+
+                // Send to next process
+                MPI_Send(buffer, msg_size, MPI_DOUBLE,
+                         next, tag, MPI_COMM_WORLD);
+            }
+        }
+
+        if(rank == 0)
+        {
+            double avg_latency =
+                (total_time / NUMBER_OF_TESTS) * 1000.0;
+
+            printf("Message Size = %d doubles\t",
+                   msg_size);
+
+            printf("Avg Latency = %f ms\n",
+                   avg_latency);
+        }
+
+        free(buffer);
+    }
+
+    MPI_Finalize();
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <mpi.h>
+
+int main(int argc, char *argv[])
+{
+    int rank, size;
+
+    MPI_Init(&argc, &argv);
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    // Must run with exactly 4 processes
+    if(size != 4)
+    {
+        if(rank == 0)
+            printf("Run with exactly 4 processes\n");
+
+        MPI_Finalize();
+        return 0;
+    }
+
+    int n = 2;
+
+    // Broadcast variable
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    MPI_Bcast(&n, 1, MPI_INT,
+              0, MPI_COMM_WORLD);
+
+    int sendbuf[8];
+    int recvbuf[2];
+    int gatherbuf[8];
+
+    // Initialize array at root
+    if(rank == 0)
+    {
+        printf("Original Array:\n");
+
+        for(int i = 0; i < 4 * n; i++)
+        {
+            sendbuf[i] = i + 1;
+
+            printf("%d ", sendbuf[i]);
+        }
+
+        printf("\n");
+    }
+
+    // Synchronize before scatter
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Scatter n integers to each process
+    MPI_Scatter(sendbuf, n, MPI_INT,
+                recvbuf, n, MPI_INT,
+                0, MPI_COMM_WORLD);
+
+    printf("Process %d received: ",
+           rank);
+
+    for(int i = 0; i < n; i++)
+    {
+        printf("%d ", recvbuf[i]);
+    }
+
+    printf("\n");
+
+    // Local computation
+    for(int i = 0; i < n; i++)
+    {
+        recvbuf[i] *= 2;
+    }
+
+    printf("Process %d processed: ",
+           rank);
+
+    for(int i = 0; i < n; i++)
+    {
+        printf("%d ", recvbuf[i]);
+    }
+
+    printf("\n");
+
+    // Synchronize before gather
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    // Gather results back to root
+    MPI_Gather(recvbuf, n, MPI_INT,
+               gatherbuf, n, MPI_INT,
+               0, MPI_COMM_WORLD);
+
+    // Print gathered array
+    if(rank == 0)
+    {
+        printf("\nFinal Gathered Array:\n");
+
+        for(int i = 0; i < 4 * n; i++)
+        {
+            printf("%d ", gatherbuf[i]);
+        }
+
+        printf("\n");
+    }
+
+    MPI_Finalize();
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
